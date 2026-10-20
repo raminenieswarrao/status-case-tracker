@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    <meta name="theme-color"
+          content="#071f3d">
+
+    <title th:text="${caseItem.caseName} + ' · USCIS Case Tracker'">
+        USCIS Case
+    </title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+
+</head>
+
+<body class="app-page">
+
+<div class="page-loading-bar"
+     data-page-loader></div>
+
+
+<header th:replace="~{fragments :: topbar}">
+</header>
+
+<nav th:replace="~{fragments :: nav}">
+</nav>
+
+
+<main class="container narrow case-detail-page">
+
+    <div th:replace="~{fragments :: flash}">
+    </div>
+
+
+    <!-- BACK -->
+
+    <a class="back-link mobile-touch"
+       th:href="@{/}">
+
+        <span aria-hidden="true">←</span>
+
+        All cases
+
+    </a>
+
+
+    <!-- CASE HEADING -->
+
+    <section class="detail-heading">
+
+        <div class="detail-heading-copy">
+
+            <span class="eyebrow"
+                  th:text="${caseItem.formType ?: 'USCIS CASE'}">
+
+                I-129
+
+            </span>
+
+            <h1 th:text="${caseItem.caseName}">
+                H1B Case
+            </h1>
+
+            <p class="receipt"
+               th:text="${caseItem.receiptNumber}">
+
+                IOE1234567890
+
+            </p>
+
+        </div>
+
+
+        <a class="btn ghost edit-case-button mobile-touch"
+           th:href="@{/cases/{id}/edit(id=${caseItem.id})}">
+
+            <span aria-hidden="true">✎</span>
+
+            Edit
+
+        </a>
+
+    </section>
+
+
+    <!-- STATUS -->
+
+    <section class="status-hero"
+             th:classappend="' hero-' + ${#strings.toLowerCase(caseItem.friendlyStatus.name())}">
+
+        <div class="status-orb"
+             aria-hidden="true">
+        </div>
+
+        <div class="status-content">
+
+            <span class="status-label"
+                  th:text="${#strings.replace(caseItem.friendlyStatus.name(),'_',' ')}">
+
+                PROCESSING
+
+            </span>
+
+            <h2 th:text="${caseItem.officialStatus ?: 'Waiting for USCIS status'}">
+
+                USCIS Status
+
+            </h2>
+
+        </div>
+
+    </section>
+
+
+    <!-- INVALID RECEIPT -->
+
+    <div class="invalid-callout big slide-in"
+         th:if="${caseItem.trackingStatus.name() == 'INVALID_RECEIPT'}">
+
+        <div class="callout-icon">
+            !
+        </div>
+
+        <div>
+
+            <strong>
+                Invalid Case Number
+            </strong>
+
+            <p>
+                Automatic hourly checks are stopped.
+                Edit the case and correct the receipt number
+                to restart tracking.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- FINAL CASE -->
+
+    <div class="completed-callout slide-in"
+         th:if="${caseItem.trackingStatus.name() == 'COMPLETED'}">
+
+        <div class="callout-icon">
+            ✓
+        </div>
+
+        <div>
+
+            <strong>
+                Automatic tracking completed
+            </strong>
+
+            <p>
+                This case reached a final status,
+                so hourly USCIS checks have stopped.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- CASE INFORMATION -->
+
+    <section class="panel detail-panel reveal-card">
+
+        <p class="description"
+           th:text="${caseItem.officialDescription ?: 'No official description available yet.'}">
+
+            Description
+
+        </p>
+
+
+        <div class="detail-grid">
+
+            <div class="detail-item">
+
+                <small>
+                    Applicant
+                </small>
+
+                <strong th:text="${caseItem.applicantName}">
+                    Applicant
+                </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <small>
+                    Notification Email
+                </small>
+
+                <strong class="email-value"
+                        th:text="${caseItem.notificationEmail}">
+
+                    email@example.com
+
+                </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <small>
+                    Form Type
+                </small>
+
+                <strong th:text="${caseItem.formType ?: '—'}">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <small>
+                    Tracking
+                </small>
+
+                <strong th:text="${#strings.replace(caseItem.trackingStatus.name(),'_',' ')}">
+
+                    ACTIVE
+
+                </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <small>
+                    Last Checked
+                </small>
+
+                <strong th:text="${@dateTimeFormatterService.format(caseItem.lastCheckedAt)}">
+
+                    —
+
+                </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <small>
+                    Status Changed
+                </small>
+
+                <strong th:text="${@dateTimeFormatterService.format(caseItem.lastStatusChangedAt)}">
+
+                    —
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="error-line"
+             th:if="${caseItem.lastError != null}">
+
+            <strong>
+                Last check error
+            </strong>
+
+            <span th:text="${caseItem.lastError}">
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- CASE ACTIONS -->
+
+    <section class="action-row case-actions">
+
+        <!-- REFRESH -->
+
+        <form th:if="${caseItem.trackingStatus.name() != 'INVALID_RECEIPT'}"
+              th:action="@{/cases/{id}/refresh(id=${caseItem.id})}"
+              method="post"
+              data-loading-form>
+
+            <button class="btn primary action-button"
+                    type="submit"
+                    data-loading-text="Checking USCIS...">
+
+                <span class="button-icon">
+                    ↻
+                </span>
+
+                <span class="button-label">
+                    Refresh Status
+                </span>
+
+            </button>
+
+        </form>
+
+
+        <!-- PAUSE TRACKING -->
+
+        <form th:if="${caseItem.trackingStatus.name() == 'ACTIVE'}"
+              th:action="@{/cases/{id}/pause(id=${caseItem.id})}"
+              method="post"
+              data-loading-form>
+
+            <button class="btn ghost action-button"
+                    type="submit"
+                    data-loading-text="Pausing...">
+
+                <span class="button-icon">
+                    Ⅱ
+                </span>
+
+                <span class="button-label">
+                    Pause Tracking
+                </span>
+
+            </button>
+
+        </form>
+
+
+        <!-- RESUME TRACKING -->
+
+        <form th:if="${caseItem.trackingStatus.name() == 'PAUSED'}"
+              th:action="@{/cases/{id}/resume(id=${caseItem.id})}"
+              method="post"
+              data-loading-form>
+
+            <button class="btn primary action-button"
+                    type="submit"
+                    data-loading-text="Resuming...">
+
+                <span class="button-icon">
+                    ▶
+                </span>
+
+                <span class="button-label">
+                    Resume Tracking
+                </span>
+
+            </button>
+
+        </form>
+
+
+        <!-- OFFICIAL USCIS WEBSITE -->
+
+        <a class="btn ghost action-button mobile-touch"
+           href="https://egov.uscis.gov/"
+           target="_blank"
+           rel="noopener noreferrer">
+
+            <span class="button-icon">
+                ↗
+            </span>
+
+            <span class="button-label">
+                Check on USCIS
+            </span>
+
+        </a>
+
+    </section>
+
+
+    <!-- OFFICIAL USCIS NOTE -->
+
+    <section class="official-uscis-note reveal-card">
+
+        <div class="official-uscis-note-icon">
+            ↗
+        </div>
+
+        <div>
+
+            <strong>
+                Verify on the official USCIS website
+            </strong>
+
+            <p>
+                Use the button above to open USCIS Case Status Online
+                and enter this receipt number:
+                <span th:text="${caseItem.receiptNumber}">
+                    IOE1234567890
+                </span>
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- EMAIL NOTIFICATIONS -->
+
+    <section class="section-head section-head-mobile">
+
+        <div>
+
+            <span class="eyebrow">
+                EMAIL
+            </span>
+
+            <h2>
+                Email Notifications
+            </h2>
+
+            <p>
+                Control case emails without affecting hourly USCIS tracking.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <section class="panel notification-panel reveal-card">
+
+
+        <!-- EMAIL HEADER -->
+
+        <div class="notification-header">
+
+            <div class="notification-email-block">
+
+                <div class="notification-icon">
+                    ✉
+                </div>
+
+                <div>
+
+                    <small>
+                        Emails sent to
+                    </small>
+
+                    <strong th:text="${caseItem.notificationEmail}">
+                        email@gmail.com
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <span class="email-state active"
+                  th:if="${!caseItem.emailNotificationsPaused}">
+
+                ACTIVE
+
+            </span>
+
+
+            <span class="email-state paused"
+                  th:if="${caseItem.emailNotificationsPaused}">
+
+                PAUSED
+
+            </span>
+
+        </div>
+
+
+        <!-- PAUSED INFORMATION -->
+
+        <div class="paused-email-message"
+             th:if="${caseItem.emailNotificationsPaused}">
+
+            <span class="paused-email-icon">
+                ⏸
+            </span>
+
+            <div>
+
+                <strong>
+                    Email notifications are paused
+                </strong>
+
+                <p>
+                    USCIS hourly tracking is still running normally.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- SETTINGS -->
+
+        <form th:action="@{/cases/{id}/notifications(id=${caseItem.id})}"
+              method="post"
+              class="notification-settings"
+              data-loading-form>
+
+
+            <!-- DAILY SUMMARY -->
+
+            <label class="notification-option">
+
+                <div class="notification-option-icon daily-icon">
+                    ☀
+                </div>
+
+
+                <div class="notification-text">
+
+                    <strong>
+                        Daily Summary
+                    </strong>
+
+                    <small>
+                        Receive one case summary every day at
+                        5:00 PM Eastern, even if the case is still processing.
+                    </small>
+
+                </div>
+
+
+                <span class="switch">
+
+                    <input type="checkbox"
+                           name="dailySummaryEnabled"
+                           value="true"
+                           th:checked="${caseItem.dailySummaryEnabled}">
+
+                    <span class="slider">
+                    </span>
+
+                </span>
+
+            </label>
+
+
+            <!-- STATUS CHANGE -->
+
+            <label class="notification-option">
+
+                <div class="notification-option-icon change-icon">
+                    ⚡
+                </div>
+
+
+                <div class="notification-text">
+
+                    <strong>
+                        Status Change Alert
+                    </strong>
+
+                    <small>
+                        Receive an email immediately when USCIS
+                        changes the status of this case.
+                    </small>
+
+                </div>
+
+
+                <span class="switch">
+
+                    <input type="checkbox"
+                           name="statusChangeEmailEnabled"
+                           value="true"
+                           th:checked="${caseItem.statusChangeEmailEnabled}">
+
+                    <span class="slider">
+                    </span>
+
+                </span>
+
+            </label>
+
+
+            <button class="btn primary wide save-notification-button"
+                    type="submit"
+                    data-loading-text="Saving settings...">
+
+                <span class="button-icon">
+                    ✓
+                </span>
+
+                <span class="button-label">
+                    Save Email Settings
+                </span>
+
+            </button>
+
+        </form>
+
+
+        <!-- PAUSE EMAIL -->
+
+        <form th:if="${!caseItem.emailNotificationsPaused}"
+              th:action="@{/cases/{id}/notifications/pause(id=${caseItem.id})}"
+              method="post"
+              class="notification-action"
+              data-loading-form>
+
+            <button class="btn ghost wide"
+                    type="submit"
+                    data-loading-text="Pausing emails...">
+
+                <span class="button-icon">
+                    ⏸
+                </span>
+
+                <span class="button-label">
+                    Pause Email Notifications
+                </span>
+
+            </button>
+
+        </form>
+
+
+        <!-- RESUME EMAIL -->
+
+        <form th:if="${caseItem.emailNotificationsPaused}"
+              th:action="@{/cases/{id}/notifications/resume(id=${caseItem.id})}"
+              method="post"
+              class="notification-action"
+              data-loading-form>
+
+            <button class="btn primary wide"
+                    type="submit"
+                    data-loading-text="Resuming emails...">
+
+                <span class="button-icon">
+                    ▶
+                </span>
+
+                <span class="button-label">
+                    Resume Email Notifications
+                </span>
+
+            </button>
+
+        </form>
+
+
+        <div class="notification-footnote">
+
+            <span>
+                ℹ
+            </span>
+
+            <p>
+                Pausing email does not pause USCIS case tracking.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- STATUS HISTORY -->
+
+    <section class="section-head section-head-mobile">
+
+        <div>
+
+            <span class="eyebrow">
+                HISTORY
+            </span>
+
+            <h2>
+                Status History
+            </h2>
+
+            <p>
+                A history entry is created whenever the case status changes.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <div class="timeline reveal-card"
+         th:if="${!#lists.isEmpty(history)}">
+
+        <article th:each="h : ${history}">
+
+            <div class="timeline-dot">
+            </div>
+
+            <div class="timeline-content">
+
+                <time th:text="${@dateTimeFormatterService.format(h.detectedAt)}">
+
+                    Date
+
+                </time>
+
+                <strong th:text="${h.officialStatus ?: h.friendlyStatus}">
+
+                    Status
+
+                </strong>
+
+                <p th:text="${h.officialDescription}">
+                </p>
+
+            </div>
+
+        </article>
+
+    </div>
+
+
+    <div class="empty-state compact"
+         th:if="${#lists.isEmpty(history)}">
+
+        <p>
+            No status history yet.
+        </p>
+
+    </div>
+
+
+    <!-- DELETE -->
+
+    <section class="danger-zone reveal-card">
+
+        <div class="danger-zone-header">
+
+            <div class="danger-icon">
+                !
+            </div>
+
+            <div>
+
+                <h3>
+                    Remove Case
+                </h3>
+
+                <p>
+                    Permanently removes this tracked case
+                    and its local status history.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form th:action="@{/cases/{id}/delete(id=${caseItem.id})}"
+              method="post"
+              data-loading-form
+              onsubmit="return confirm('Remove this tracked case permanently?');">
+
+            <button class="btn danger"
+                    type="submit"
+                    data-loading-text="Removing case...">
+
+                <span class="button-label">
+                    Delete Case
+                </span>
+
+            </button>
+
+        </form>
+
+    </section>
+
+</main>
+
+
+<!-- ACTION OVERLAY -->
+
+<div class="action-overlay"
+     data-action-overlay
+     aria-hidden="true">
+
+    <div class="action-overlay-card">
+
+        <div class="app-spinner">
+        </div>
+
+        <strong data-action-overlay-text>
+            Please wait...
+        </strong>
+
+        <small>
+            This should only take a moment.
+        </small>
+
+    </div>
+
+</div>
+
+
+<script th:src="@{/js/app.js}">
+</script>
+
+</body>
+</html>

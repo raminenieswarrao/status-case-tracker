@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Login · USCIS Case Tracker</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="auth-page">
+<div class="auth-shell">
+    <section class="auth-hero">
+        <div class="seal">U</div>
+        <h1>USCIS<br>Case Tracker</h1>
+        <p>Private case monitoring with hourly checks and status alerts.</p>
+    </section>
+    <section class="auth-card">
+        <h2>Welcome back</h2><p class="muted">Sign in to your private tracker.</p>
+        <div class="flash success" th:if="${param.registered}">Account created. You can sign in now.</div>
+        <div class="flash success" th:if="${param.logout}">You have been signed out.</div>
+        <div class="flash error" th:if="${param.error}">Invalid username/email or password.</div>
+        <form th:action="@{/login}" method="post" class="form-stack">
+            <label>Email or username<input name="login" autocomplete="username" required autofocus placeholder="eswar"></label>
+            <label>Password
+                <div class="password-field"><input id="password" type="password" name="password" autocomplete="current-password" required><button type="button" data-toggle-password="password">👁</button></div>
+            </label>
+            <button class="btn primary wide" type="submit">Sign In</button>
+        </form>
+        <div class="auth-alt">New here? <a th:href="@{/register}">Create an account</a></div>
+        <p class="security-note">🔒 Passwords are BCrypt hashed. No email verification or password-reset email.</p>
+    </section>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

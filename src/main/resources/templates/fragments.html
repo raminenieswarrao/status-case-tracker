@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="topbar" class="topbar">
+    <a class="brand" th:href="@{/}">
+        <span class="brand-mark">U</span>
+        <span><strong>USCIS</strong><small>Case Tracker</small></span>
+    </a>
+    <button class="menu-button" type="button" aria-label="Open menu" data-menu-toggle>☰</button>
+</header>
+
+<nav th:fragment="nav" class="drawer" data-drawer>
+    <div class="drawer-backdrop" data-menu-close></div>
+    <div class="drawer-panel">
+        <div class="drawer-head">
+            <div class="avatar" th:text="${navUser != null ? #strings.substring(navUser.username,0,1).toUpperCase() : 'U'}">E</div>
+            <div>
+                <strong th:text="${navUser != null ? navUser.username : 'User'}">User</strong>
+                <small th:text="${navUser != null && navUser.email != null ? navUser.email : 'Private tracker'}">email</small>
+            </div>
+            <button type="button" class="icon-button" data-menu-close>✕</button>
+        </div>
+        <a th:href="@{/}">⌂ <span>Dashboard</span></a>
+        <a th:href="@{/cases/new}">＋ <span>Add Case</span></a>
+        <a th:href="@{/profile}">◉ <span>Profile</span></a>
+        <a th:href="@{/change-password}">▣ <span>Change Password</span></a>
+        <form th:action="@{/logout}" method="post">
+            <button class="drawer-logout" type="submit">↪ <span>Logout</span></button>
+        </form>
+    </div>
+</nav>
+
+<div th:fragment="flash">
+    <div class="flash success" th:if="${success}" th:text="${success}"></div>
+    <div class="flash error" th:if="${error}" th:text="${error}"></div>
+</div>
+</body>
+</html>

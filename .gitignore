@@ -1,0 +1,34 @@
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment / secrets
+.env
+.env.*
+application-local.properties
+application-prod.properties
+
+# Certificates / keys
+*.pem
+*.key
+*.p12
+*.jks
+
+# Temporary
+*.tmp
+*.swp

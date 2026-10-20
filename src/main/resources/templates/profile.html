@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Profile · USCIS Case Tracker</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header th:replace="~{fragments :: topbar}"></header><nav th:replace="~{fragments :: nav}"></nav>
+<main class="container narrow">
+    <div th:replace="~{fragments :: flash}"></div>
+    <section class="page-title"><span class="eyebrow">ACCOUNT</span><h1>My Profile</h1><p>Login and security details.</p></section>
+    <section class="panel profile-card">
+        <div class="profile-avatar" th:text="${#strings.substring(user.username,0,1).toUpperCase()}">E</div>
+        <div><h2 th:text="${user.username}">eswar</h2><p th:text="${user.email ?: 'No account email configured'}">email</p></div>
+    </section>
+    <section class="panel link-panel">
+        <a th:href="@{/change-password}">🔒 <span><strong>Change Password</strong><small>Requires your current password</small></span><b>›</b></a>
+        <form th:action="@{/logout}" method="post"><button type="submit">↪ <span><strong>Logout</strong><small>End this session</small></span><b>›</b></button></form>
+    </section>
+</main><script th:src="@{/js/app.js}"></script>
+</body></html>

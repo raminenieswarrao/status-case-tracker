@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title th:text="${editing ? 'Edit Case' : 'Add Case'} + ' · USCIS Case Tracker'">Case</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header th:replace="~{fragments :: topbar}"></header>
+<nav th:replace="~{fragments :: nav}"></nav>
+<main class="container narrow">
+    <a class="back-link" th:href="${editing ? '/cases/' + caseId : '/'}">← Back</a>
+    <section class="page-title"><span class="eyebrow" th:text="${editing ? 'EDIT TRACKED CASE' : 'NEW TRACKED CASE'}">NEW CASE</span><h1 th:text="${editing ? 'Edit Case' : 'Add USCIS Case'}">Add USCIS Case</h1><p>Each case can have its own applicant and notification email.</p></section>
+    <div class="flash error" th:if="${error}" th:text="${error}"></div>
+
+    <form class="panel form-stack" th:object="${form}"
+          th:action="${editing ? '/cases/' + caseId : '/cases'}" method="post">
+        <label>Case Name<input th:field="*{caseName}" required maxlength="120" placeholder="H1B Extension"><small th:errors="*{caseName}"></small></label>
+        <label>Applicant / User Name<input th:field="*{applicantName}" required maxlength="120" placeholder="Eswar Ramineni"><small th:errors="*{applicantName}"></small></label>
+        <label>Notification Gmail / Email<input type="email" th:field="*{notificationEmail}" required maxlength="254" placeholder="name@gmail.com"><small>This email receives the 5 PM summary and immediate approval alerts.</small><small th:errors="*{notificationEmail}"></small></label>
+        <label>USCIS Receipt Number<input class="receipt-input" th:field="*{receiptNumber}" required maxlength="13" placeholder="IOE1234567890" autocomplete="off"><small>13 characters: 3 letters followed by 10 numbers. Dashes are not needed.</small><small th:errors="*{receiptNumber}"></small></label>
+
+        <div class="info-box">ℹ️ When you save, the app checks the receipt immediately. If USCIS reports it as invalid, hourly tracking is disabled until you edit and correct it.</div>
+        <button class="btn primary wide" type="submit" th:text="${editing ? 'Save & Revalidate if Changed' : 'Track Case'}">Track Case</button>
+    </form>
+</main>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
